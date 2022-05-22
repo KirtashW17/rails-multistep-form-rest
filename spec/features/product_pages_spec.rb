@@ -177,14 +177,13 @@ describe "Product pages", type: :feature do
           expect(step_2?).to be_truthy
         end
 
-        # This test currently fails
-        # it "clears out required nested field, goes back, then forward" do
-        #   fill_in "product_categories_attributes_0_name", with: nil
-        #   click_button "Back"
-        #   expect(step_1?).to be_truthy
-        #   click_button "Next"
-        #   expect(step_2?).to be_truthy
-        # end
+        it "clears out required nested field, goes back, then forward" do
+          fill_in "product_categories_attributes_0_name", with: nil
+          click_button "Back"
+          expect(step_1?).to be_truthy
+          click_button "Next"
+          expect(step_2?).to be_truthy
+        end
       end
 
       context "at step 3" do

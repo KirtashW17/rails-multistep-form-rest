@@ -1,5 +1,6 @@
 class ProductsController < ApplicationController
   before_action :load_product
+  before_action :set_form_builder, except: [:show, :index]
 
   def index
     @products = Product.all
@@ -9,16 +10,16 @@ class ProductsController < ApplicationController
   end
 
   def new
-    @wizard = ModelWizard.new(Product, session, params).start
+    @wizard = ModelWizard.new(Product, params).start
     @product = @wizard.object
   end
 
   def edit
-    @wizard = ModelWizard.new(@product, session, params).start
+    @wizard = ModelWizard.new(@product, params).start
   end
 
   def create
-    @wizard = ModelWizard.new(Product, session, params, product_params).continue
+    @wizard = ModelWizard.new(Product, params, product_params).continue
     @product = @wizard.object
     if @wizard.save
       redirect_to @product, notice: "Product created!"
@@ -28,7 +29,7 @@ class ProductsController < ApplicationController
   end
 
   def update
-    @wizard = ModelWizard.new(@product, session, params, product_params).continue
+    @wizard = ModelWizard.new(@product, params, product_params).continue
     if @wizard.save
       redirect_to @product, notice: 'Product updated.'
     else
@@ -63,6 +64,17 @@ private
       :tags,
       :categories_attributes => [:id, :name]
     )
+  end
+
+  private
+
+  def set_form_builder
+    @form_builder, @partial =
+      if params[:all]
+        [ActionView::Helpers::FormBuilder, "products/steps/all_steps"]
+      else
+        [ModelWizardFormBuilder, "products/steps/current_step"]
+      end
   end
 
 end

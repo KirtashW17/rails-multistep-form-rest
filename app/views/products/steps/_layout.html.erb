@@ -1,0 +1,8 @@
+<% if f.class == ModelWizardFormBuilder %>
+  <div class="hidden-fields">
+    <%= f.hidden_fields_for :name, :description, :quantity, :price, :available_at %>
+    <%= f.hidden_fields_for :name, :id, parent: :categories %>
+  </div>
+<% end %>
+
+<%= yield %>

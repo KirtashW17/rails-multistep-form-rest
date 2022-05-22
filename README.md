@@ -1,5 +1,5 @@
-# Multistep form wizard from scratch in Rails
-This (Rails 5) project demonstrates how to break up a model-backed form into multiple steps without any gems.  This kind of thing can get pretty complex, but this implementation is fairly straightforward, flexible, and reusable. It can work with Rails 3-4 as well.
+# REST Multistep form wizard from scratch in Rails
+This (Rails 5) project demonstrates how to break up a model-backed form into multiple steps without any gems nor using session.  This kind of thing can get pretty complex, but this implementation is fairly straightforward, flexible, and reusable. It can work with Rails 3-4 as well.
 
 ### Background
 [This railscast](http://railscasts.com/episodes/217-multistep-forms) is a solid approach that I used as a starting point.  But there are a few problems with it that my project attempts to solve:
@@ -11,9 +11,8 @@ This (Rails 5) project demonstrates how to break up a model-backed form into mul
 * Abstract the approach for any model.
 
 ### Installing
-
-    git clone git://github.com/nerdcave/rails-multistep-form.git
-    cd rails-multistep-form
+    git clone git://github.com/KirtashW17/rails-multistep-form-rest.git
+    cd rails-multistep-form-rest
     bundle install
     rake db:migrate
     rake db:test:prepare
@@ -23,6 +22,10 @@ Run `rspec` to run the tests, and/or visit http://localhost:3000/products.
 
 If you have any issues, be sure you're using **Ruby >= 2.3**.
 
+### Using in your own project
+* Copy these files: **app/models/concerns/multi_step_model.rb**, **app/services/model_wizard.rb** and **app/helpers/model_wizard_form_builder.rb** (optional).
+* In your model, `include MultiStepModel` and use class methods `has_steps(number_of_steps)` and `step_N_attributes(*attrs, **nested)` just like in the example (The last one only if you plan using the ModelWizardFormBuilder to create the hidden fields, otherwise you can just manually create the required hidden fields on each page) 
+* Then just follow the conventions in this project that uses them. Check out the `ProductsController`, in particular, and the view form.
 
 ### Implementation details
 * To validate an attribute, all that's needed is a conditional with the step to enforce validation:
@@ -31,12 +34,12 @@ If you have any issues, be sure you're using **Ruby >= 2.3**.
 validates :name, presence: true, if: :step1?
 validates :quantity, numericality: true, if: :step2?
 ```
+* When using the `ModelWizardFormBuilder`, if you have defined which attributes are visible on each step on the respective model, you can create a set of hidden fields to keep inserted data between steps just like this (look at _layout.html.erb):
+```
+    <%= f.hidden_fields_for :name, :description, :quantity, :price, :available_at %>
+    <%= f.hidden_fields_for :name, :id, parent: :categories %>
+```
 * If you create/update an object without the multistep form (i.e. in a test or the rails console), the step logic will be ignored and all fields will validate as expected.
-
-### Using in your own project
-* Copy these files: **app/models/concerns/multi_step_model.rb** and **app/services/model_wizard.rb**.
-* In your model, `include MultiStepModel` and define `self.total_steps`.
-* Then just follow the conventions in this project that uses them. Check out the `ProductsController`, in particular, and the view form.
 
 ### Features
 * Multi or single step create/update.
@@ -45,8 +48,14 @@ validates :quantity, numericality: true, if: :step2?
 * RSpec/Capybara feature tests included.
 * Browser back/forward should work as expected (Turbolinks not supported).
 
+### Fork Modifications
+* ModelWizard will no longer use session (cookie)
+* Adds step_attributes class method when including MultiStepModel, this method allows to define the fields that should be show in any step.
+* Adds custom FormBuilder that extends ActionView::Helpers::FormBuilder to easily create hidden fields that will displayed only when required (present in the object and not visible in current step)
+* Using params instead of session fixes 'clears out required nested field, goes back, then forward' test.
+
 ### Limitations
 While this works for most simple models, it's not flawless. Here are a few issues:
 * Browser back/forward buttons break if using Turbolinks.
-* Nested models may have issues (broken test case included).
+* Nested models may have issues.
 * Complicated fields such as uploads may be a problem.

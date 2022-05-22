@@ -8,7 +8,7 @@
   <%= f.number_field :quantity %>
 </div>
 
-<%= f.fields_for :categories do |cf| %>
+<%= f.fields_for :categories, nil do |cf| %>
   <div class="field">
     <%= cf.label :name, "Category name (nested model field):" %><br />
     <%= cf.text_field :name %>

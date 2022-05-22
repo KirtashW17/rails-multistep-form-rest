@@ -8,10 +8,8 @@
   </div>
 <% end %>
 
-<%= form_for build_product(@product) do |f| %>
-  <% if params[:all].nil? %>
-    <%= render 'products/steps/current_step', f: f %>
-  <% else %>
-    <%= render 'products/steps/all_steps', f: f %>
+<%= form_for build_product(@product, params[:all]), builder: @form_builder do |f| %>
+  <%= render layout: 'products/steps/layout', locals: {f: f} do %>
+    <%= render @partial, f: f %>
   <% end %>
 <% end %>

@@ -1,24 +1,23 @@
 class ModelWizard
   attr_reader :object
 
-  def initialize(object_or_class, session, params = nil, object_params = nil)
-    @object_or_class, @session = object_or_class, session
+  def initialize(object_or_class, params = {}, object_params = {})
+    @object_or_class = object_or_class
     @params, @object_params = params, object_params
+    @object_params.merge(@params["#{@param_key}"]) if @params["#{@param_key}"]
+    @params.delete("#{@param_key}")
     @param_key = ActiveModel::Naming.param_key(object_or_class)
-    @session_params = "#{@param_key}_params".to_sym
   end
 
   def start
-    @session[@session_params] = {}
     @object = load_object
     @object.current_step = @params[:step].to_i
     self
   end
 
   def continue
-    @session[@session_params].deep_merge!(@object_params) if @object_params
     @object = load_object
-    @object.assign_attributes(@session[@session_params]) unless class?
+    @object.assign_attributes(@object_params) unless class?
     self
   end
 
@@ -34,7 +33,14 @@ class ModelWizard
 private
 
   def load_object
-    class? ? @object_or_class.new(@session[@session_params]): @object_or_class
+    current_step = @object_params['current_step']
+    if class?
+      @object_or_class.new(
+        @object_params.merge('current_step' => current_step)
+      )
+    else
+      @object_or_class
+    end
   end
 
   def class?
@@ -45,7 +51,6 @@ private
     if @object.last_step?
       if @object.all_steps_valid?
         success = @object.save
-        @session[@session_param] = nil
         return success
       end
     else
