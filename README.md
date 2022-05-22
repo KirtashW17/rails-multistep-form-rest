@@ -52,10 +52,9 @@ validates :quantity, numericality: true, if: :step2?
 * ModelWizard will no longer use session (cookie)
 * Adds step_attributes class method when including MultiStepModel, this method allows to define the fields that should be show in any step.
 * Adds custom FormBuilder that extends ActionView::Helpers::FormBuilder to easily create hidden fields that will displayed only when required (present in the object and not visible in current step)
-* Using params instead of session fixes 'clears out required nested field, goes back, then forward' test.
+* Using params instead of session fixes some nested models issues (failing test now works) and back/forward buttons w/ turbolinks.
 
 ### Limitations
 While this works for most simple models, it's not flawless. Here are a few issues:
-* Browser back/forward buttons break if using Turbolinks.
-* Nested models may have issues.
+* Nested models may have issues, specially double nested ones (`has_many :foo, through: :bar`).
 * Complicated fields such as uploads may be a problem.
